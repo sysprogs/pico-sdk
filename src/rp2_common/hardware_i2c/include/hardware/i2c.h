@@ -48,6 +48,10 @@ extern "C" {
 
 typedef struct i2c_inst i2c_inst_t;
 
+// PICO_CONFIG: PICO_DEFAULT_I2C, Define the default I2C for a board, min=0, max=1, group=hardware_i2c
+// PICO_CONFIG: PICO_DEFAULT_I2C_SDA_PIN, Define the default I2C SDA pin, min=0, max=29, group=hardware_i2c
+// PICO_CONFIG: PICO_DEFAULT_I2C_SCL_PIN, Define the default I2C SCL pin, min=0, max=29, group=hardware_i2c
+
 /** The I2C identifiers for use in I2C functions.
  *
  * e.g. i2c_init(i2c0, 48000)
@@ -60,6 +64,14 @@ extern i2c_inst_t i2c1_inst;
 
 #define i2c0 (&i2c0_inst) ///< Identifier for I2C HW Block 0
 #define i2c1 (&i2c1_inst) ///< Identifier for I2C HW Block 1
+
+#if !defined(PICO_DEFAULT_I2C_INSTANCE) && defined(PICO_DEFAULT_I2C)
+#define PICO_DEFAULT_I2C_INSTANCE (__CONCAT(i2c,PICO_DEFAULT_I2C))
+#endif
+
+#ifdef PICO_DEFAULT_I2C_INSTANCE
+#define i2c_default PICO_DEFAULT_I2C_INSTANCE
+#endif
 
 /** @} */
 
@@ -122,11 +134,11 @@ struct i2c_inst {
     bool restart_on_next;
 };
 
-/*! \brief Convert I2c instance to hardware instance number
+/*! \brief Convert I2C instance to hardware instance number
  *  \ingroup hardware_i2c
  *
  * \param i2c I2C instance
- * \return Number of UART, 0 or 1.
+ * \return Number of I2C, 0 or 1.
  */
 static inline uint i2c_hw_index(i2c_inst_t *i2c) {
     invalid_params_if(I2C, i2c != i2c0 && i2c != i2c1);
@@ -267,7 +279,7 @@ static inline size_t i2c_get_read_available(i2c_inst_t *i2c) {
  * \param src Data to send
  * \param len Number of bytes to send
  *
- * Writes directly to the to I2C TX FIFO which us mainly useful for
+ * Writes directly to the I2C TX FIFO which is mainly useful for
  * slave-mode operation.
  */
 static inline void i2c_write_raw_blocking(i2c_inst_t *i2c, const uint8_t *src, size_t len) {
@@ -279,21 +291,21 @@ static inline void i2c_write_raw_blocking(i2c_inst_t *i2c, const uint8_t *src, s
     }
 }
 
-/*! \brief Write direct to TX FIFO
+/*! \brief Read direct from RX FIFO
  *  \ingroup hardware_i2c
  *
  * \param i2c Either \ref i2c0 or \ref i2c1
  * \param dst Buffer to accept data
- * \param len Number of bytes to send
+ * \param len Number of bytes to read
  *
- * Reads directly from the I2C RX FIFO which us mainly useful for
+ * Reads directly from the I2C RX FIFO which is mainly useful for
  * slave-mode operation.
  */
 static inline void i2c_read_raw_blocking(i2c_inst_t *i2c, uint8_t *dst, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         while (!i2c_get_read_available(i2c))
             tight_loop_contents();
-        *dst++ = i2c_get_hw(i2c)->data_cmd;
+        *dst++ = (uint8_t)i2c_get_hw(i2c)->data_cmd;
     }
 }
 
