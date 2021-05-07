@@ -40,3 +40,4 @@ if (MSVC)
     target_compile_options(pioasm PRIVATE "/std:c++latest")
 endif()
 
+target_link_libraries(pioasm -static-libstdc++ -static-libgcc)

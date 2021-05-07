@@ -89,11 +89,23 @@ struct c_sdk_output : public output_format {
             fprintf(out, "static const uint16_t %sprogram_instructions[] = {\n", prefix.c_str());
             for (int i = 0; i < (int)program.instructions.size(); i++) {
                 const auto &inst = program.instructions[i];
+	            std::string suffix;
+	            if (i < program.original_instructions.size() && program.original_instructions[i]->location.begin.filename)
+	            {
+		            suffix = "@@@";
+		            char tmp[_MAX_PATH] = { 0, };
+		            _fullpath(tmp, program.original_instructions[i]->location.begin.filename->c_str(), sizeof(tmp));
+
+		            suffix += tmp;
+		            sprintf(tmp, ":%d", program.original_instructions[i]->location.begin.line);
+		            suffix += tmp;
+	            }
+	            
                 if (i == program.wrap_target) {
                     fprintf(out, "            //     .wrap_target\n");
                 }
-                fprintf(out, "    0x%04x, // %2d: %s\n", inst, i,
-                        disassemble(inst, program.sideset_bits_including_opt.get(), program.sideset_opt).c_str());
+                fprintf(out, "    0x%04x, // %2d: %s%s\n", inst, i,
+                        disassemble(inst, program.sideset_bits_including_opt.get(), program.sideset_opt).c_str(), suffix.c_str());
                 if (i == program.wrap) {
                     fprintf(out, "            //     .wrap\n");
                 }

@@ -6,4 +6,4 @@ set(CMAKE_CXX_STANDARD 14)
 add_subdirectory(../../src/common/boot_uf2 boot_uf2_headers)
 
 add_executable(elf2uf2 main.cpp)
-target_link_libraries(elf2uf2 boot_uf2_headers)
+target_link_libraries(elf2uf2 boot_uf2_headers -static-libstdc++ -static-libgcc)

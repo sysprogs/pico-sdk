@@ -11,6 +11,7 @@
 #include <map>
 #include <string>
 #include <memory>
+#include "pio_types.h"
 
 typedef unsigned int uint;
 
@@ -67,6 +68,8 @@ struct compiled_source {
         std::vector<symbol> symbols; // public only
         std::map<std::string, std::vector<std::string>> code_blocks;
         std::map<std::string, std::vector<std::pair<std::string,std::string>>> lang_opts;
+	    
+	    std::vector<std::shared_ptr<instruction>> original_instructions;
 
         // todo can't have wrap at -1
         program(std::string name) : name(std::move(name)) {}

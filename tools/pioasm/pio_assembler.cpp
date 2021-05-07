@@ -342,6 +342,8 @@ int pio_assembler::write_output() {
                        std::back_inserter(cprogram.instructions), [&](std::shared_ptr<instruction> &inst) {
                     return inst->encode(program);
                 });
+	    
+	    cprogram.original_instructions = program.instructions;
 
         for (const auto &e : program.code_blocks) {
             bool ok = false;
